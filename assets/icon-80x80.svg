@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80">
+  <rect width="80" height="80" fill="#0078d4" rx="8"/>
+  <circle cx="40" cy="30" r="8" fill="white"/>
+  <path d="M40 45 L25 60 L55 60 Z" fill="white"/>
+  <text x="40" y="72" text-anchor="middle" fill="white" font-family="Arial" font-size="8" font-weight="bold">CHECK</text>
+</svg>
