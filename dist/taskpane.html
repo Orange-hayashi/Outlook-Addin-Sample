@@ -1,7 +1,22 @@
-<!doctype html><html><head><meta charset="UTF-8"/><meta http-equiv="X-UA-Compatible" content="IE=Edge"/><meta name="viewport" content="width=device-width,initial-scale=1"><title>誤送信チェック設定</title><script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script><script>console.log('HTML loaded');
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>誤送信チェック設定</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+    <script>
+        console.log('HTML loaded');
         window.addEventListener('load', function() {
             console.log('Window loaded');
-        });</script><style>body {
+        });
+    </script>
+
+    <style>
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
@@ -114,4 +129,65 @@
             background-color: #fde7e9;
             color: #a80000;
             border: 1px solid #a80000;
-        }</style><script defer="defer" src="taskpane.js"></script></head><body><div class="container"><h1>誤送信チェック設定</h1><div class="setting-section"><div class="setting-title">件名チェック</div><div class="checkbox-container"><input type="checkbox" id="subjectCheck"> <label for="subjectCheck">件名が空の場合に警告する</label></div></div><div class="setting-section"><div class="setting-title">宛先チェック</div><div class="checkbox-container"><input type="checkbox" id="recipientCheck"> <label for="recipientCheck">宛先が空の場合に警告する</label></div></div><div class="setting-section"><div class="setting-title">添付ファイルチェック</div><div class="checkbox-container"><input type="checkbox" id="attachmentCheck"> <label for="attachmentCheck">「添付」等のキーワードがあるのに添付ファイルがない場合に警告する</label></div><textarea id="attachmentKeywords" placeholder="添付,attachment,ファイル（カンマ区切り）">添付,attachment,ファイル</textarea></div><div class="setting-section"><div class="setting-title">キーワードチェック</div><div class="checkbox-container"><input type="checkbox" id="keywordCheck"> <label for="keywordCheck">特定のキーワードが含まれている場合に警告する</label></div><textarea id="warningKeywords" placeholder="機密,重要,urgent（カンマ区切り）">機密,重要,urgent,極秘</textarea></div><div class="setting-section"><div class="setting-title">外部ドメインチェック</div><div class="checkbox-container"><input type="checkbox" id="externalDomainCheck"> <label for="externalDomainCheck">外部ドメインへの送信時に警告する</label></div><input id="internalDomains" placeholder="会社のドメイン（例：company.com）"></div><div class="button-container"><button class="save-btn" id="saveBtn">設定を保存</button> <button class="test-btn" id="testBtn">テスト実行</button></div><div id="result"></div></div><script src="taskpane.js"></script></body></html>
+        }
+    </style>
+<script defer src="taskpane.js"></script></head>
+
+<body>
+    <div class="container">
+        <h1>誤送信チェック設定</h1>
+
+        <div class="setting-section">
+            <div class="setting-title">件名チェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="subjectCheck">
+                <label for="subjectCheck">件名が空の場合に警告する</label>
+            </div>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">宛先チェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="recipientCheck">
+                <label for="recipientCheck">宛先が空の場合に警告する</label>
+            </div>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">添付ファイルチェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="attachmentCheck">
+                <label for="attachmentCheck">「添付」等のキーワードがあるのに添付ファイルがない場合に警告する</label>
+            </div>
+            <textarea id="attachmentKeywords" placeholder="添付,attachment,ファイル（カンマ区切り）">添付,attachment,ファイル</textarea>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">キーワードチェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="keywordCheck">
+                <label for="keywordCheck">特定のキーワードが含まれている場合に警告する</label>
+            </div>
+            <textarea id="warningKeywords" placeholder="機密,重要,urgent（カンマ区切り）">機密,重要,urgent,極秘</textarea>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">外部ドメインチェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="externalDomainCheck">
+                <label for="externalDomainCheck">外部ドメインへの送信時に警告する</label>
+            </div>
+            <input type="text" id="internalDomains" placeholder="会社のドメイン（例：company.com）">
+        </div>
+
+        <div class="button-container">
+            <button class="save-btn" id="saveBtn">設定を保存</button>
+            <button class="test-btn" id="testBtn">テスト実行</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script src="taskpane.js"></script>
+</body>
+</html>

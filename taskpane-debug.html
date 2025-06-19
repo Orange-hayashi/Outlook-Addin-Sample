@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>誤送信チェック設定（デバッグ版）</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #0078d4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #106ebe;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .result.success {
+            background-color: #dff6dd;
+            color: #107c10;
+        }
+        .result.error {
+            background-color: #fde7e9;
+            color: #a80000;
+        }
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        .setting-group {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>誤送信チェック設定（デバッグ版）</h1>
+        
+        <div class="setting-group">
+            <label>
+                <input type="checkbox" id="subjectCheck">
+                件名が空の場合に警告する
+            </label>
+        </div>
+        
+        <div class="setting-group">
+            <label>
+                <input type="checkbox" id="recipientCheck">
+                宛先が空の場合に警告する
+            </label>
+        </div>
+        
+        <div class="setting-group">
+            <label>
+                <input type="checkbox" id="attachmentCheck">
+                添付ファイルチェック
+            </label>
+        </div>
+        
+        <div class="setting-group">
+            <label>
+                <input type="checkbox" id="keywordCheck">
+                キーワードチェック
+            </label>
+        </div>
+        
+        <div class="setting-group">
+            <label>
+                <input type="checkbox" id="externalDomainCheck">
+                外部ドメインチェック
+            </label>
+        </div>
+        
+        <button id="saveBtn">設定を保存</button>
+        <button id="testBtn">テスト実行</button>
+        <button id="debugBtn">デバッグ情報</button>
+        
+        <div id="result"></div>
+        <div id="debug"></div>
+    </div>
+
+    <script>
+        console.log('HTML Script loaded');
+        
+        // Office.js初期化前でもテストできるようにグローバル関数を定義
+        window.testFunction = function() {
+            console.log('Test function called');
+            showResult('テスト関数が動作しています', 'success');
+        };
+        
+        // デバッグ情報表示
+        function showDebugInfo() {
+            const debugDiv = document.getElementById('debug');
+            const info = [
+                'Office: ' + (typeof Office !== 'undefined' ? 'Available' : 'Not Available'),
+                'Office.context: ' + (typeof Office !== 'undefined' && Office.context ? 'Available' : 'Not Available'),
+                'UserAgent: ' + navigator.userAgent,
+                'Location: ' + window.location.href,
+                'localStorage: ' + (typeof Storage !== 'undefined' ? 'Available' : 'Not Available')
+            ];
+            debugDiv.innerHTML = '<pre>' + info.join('\n') + '</pre>';
+        }
+        
+        function showResult(message, type) {
+            console.log('showResult called:', message, type);
+            const resultDiv = document.getElementById('result');
+            if (resultDiv) {
+                resultDiv.textContent = message;
+                resultDiv.className = 'result ' + type;
+                
+                setTimeout(() => {
+                    resultDiv.textContent = '';
+                    resultDiv.className = 'result';
+                }, 5000);
+            } else {
+                console.error('result div not found');
+                alert(message);
+            }
+        }
+        
+        function saveSettings() {
+            console.log('saveSettings called');
+            try {
+                const settings = {
+                    subjectCheck: document.getElementById('subjectCheck').checked,
+                    recipientCheck: document.getElementById('recipientCheck').checked,
+                    attachmentCheck: document.getElementById('attachmentCheck').checked,
+                    keywordCheck: document.getElementById('keywordCheck').checked,
+                    externalDomainCheck: document.getElementById('externalDomainCheck').checked
+                };
+                
+                console.log('Settings to save:', settings);
+                localStorage.setItem('emailCheckSettings', JSON.stringify(settings));
+                showResult('設定を保存しました', 'success');
+            } catch (error) {
+                console.error('Save error:', error);
+                showResult('設定の保存に失敗しました: ' + error.message, 'error');
+            }
+        }
+        
+        function loadSettings() {
+            console.log('loadSettings called');
+            try {
+                const saved = localStorage.getItem('emailCheckSettings');
+                console.log('Saved settings:', saved);
+                
+                if (saved) {
+                    const settings = JSON.parse(saved);
+                    document.getElementById('subjectCheck').checked = settings.subjectCheck || false;
+                    document.getElementById('recipientCheck').checked = settings.recipientCheck || false;
+                    document.getElementById('attachmentCheck').checked = settings.attachmentCheck || false;
+                    document.getElementById('keywordCheck').checked = settings.keywordCheck || false;
+                    document.getElementById('externalDomainCheck').checked = settings.externalDomainCheck || false;
+                    showResult('設定を読み込みました', 'success');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                showResult('設定の読み込みに失敗しました: ' + error.message, 'error');
+            }
+        }
+        
+        // DOM読み込み完了時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired');
+            
+            // ボタンイベント設定
+            const saveBtn = document.getElementById('saveBtn');
+            const testBtn = document.getElementById('testBtn');
+            const debugBtn = document.getElementById('debugBtn');
+            
+            console.log('Buttons found:', !!saveBtn, !!testBtn, !!debugBtn);
+            
+            if (saveBtn) {
+                saveBtn.addEventListener('click', function() {
+                    console.log('Save button clicked');
+                    saveSettings();
+                });
+            }
+            
+            if (testBtn) {
+                testBtn.addEventListener('click', function() {
+                    console.log('Test button clicked');
+                    showResult('テストボタンが押されました', 'success');
+                });
+            }
+            
+            if (debugBtn) {
+                debugBtn.addEventListener('click', function() {
+                    console.log('Debug button clicked');
+                    showDebugInfo();
+                });
+            }
+            
+            // 設定読み込み
+            loadSettings();
+        });
+        
+        // Office.js初期化
+        Office.onReady((info) => {
+            console.log('Office.onReady called', info);
+            if (info.host === Office.HostType.Outlook) {
+                console.log('Outlook host detected');
+                showResult('Office.jsが初期化されました', 'success');
+            } else {
+                console.log('Non-Outlook host:', info.host);
+                showResult('Office.jsが初期化されました（Outlook以外）', 'success');
+            }
+        });
+        
+        // ウィンドウ読み込み完了時
+        window.addEventListener('load', function() {
+            console.log('Window load fired');
+        });
+        
+        console.log('All script loaded');
+    </script>
+</body>
+</html>
