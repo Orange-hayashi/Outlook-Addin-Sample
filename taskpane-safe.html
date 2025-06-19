@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>誤送信チェック設定</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #323130;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .setting-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #edebe9;
+            border-radius: 4px;
+            background-color: #faf9f8;
+        }
+
+        .setting-title {
+            font-weight: bold;
+            color: #323130;
+            margin-bottom: 10px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d2d0ce;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            height: 60px;
+            resize: vertical;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            background-color: #0078d4;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background-color: #106ebe;
+        }
+
+        .test-btn {
+            background-color: #f3f2f1;
+            color: #323130;
+            border: 1px solid #d2d0ce;
+        }
+
+        .test-btn:hover {
+            background-color: #edebe9;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            white-space: pre-line;
+        }
+
+        .result.success {
+            background-color: #dff6dd;
+            color: #107c10;
+            border: 1px solid #107c10;
+        }
+
+        .result.error {
+            background-color: #fde7e9;
+            color: #a80000;
+            border: 1px solid #a80000;
+        }
+
+        .info {
+            background-color: #e1f5fe;
+            color: #01579b;
+            border: 1px solid #01579b;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>誤送信チェック設定</h1>
+        
+        <div class="info" id="statusInfo">
+            初期化中...
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">件名チェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="subjectCheck">
+                <label for="subjectCheck">件名が空の場合に警告する</label>
+            </div>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">宛先チェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="recipientCheck">
+                <label for="recipientCheck">宛先が空の場合に警告する</label>
+            </div>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">添付ファイルチェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="attachmentCheck">
+                <label for="attachmentCheck">「添付」等のキーワードがあるのに添付ファイルがない場合に警告する</label>
+            </div>
+            <textarea id="attachmentKeywords" placeholder="添付,attachment,ファイル（カンマ区切り）">添付,attachment,ファイル</textarea>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">キーワードチェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="keywordCheck">
+                <label for="keywordCheck">特定のキーワードが含まれている場合に警告する</label>
+            </div>
+            <textarea id="warningKeywords" placeholder="機密,重要,urgent（カンマ区切り）">機密,重要,urgent,極秘</textarea>
+        </div>
+
+        <div class="setting-section">
+            <div class="setting-title">外部ドメインチェック</div>
+            <div class="checkbox-container">
+                <input type="checkbox" id="externalDomainCheck">
+                <label for="externalDomainCheck">外部ドメインへの送信時に警告する</label>
+            </div>
+            <input type="text" id="internalDomains" placeholder="会社のドメイン（例：company.com）">
+        </div>
+
+        <div class="button-container">
+            <button class="save-btn" id="saveBtn">設定を保存</button>
+            <button class="test-btn" id="testBtn">接続テスト</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let officeContext = null;
+        
+        function updateStatus(message) {
+            const statusDiv = document.getElementById('statusInfo');
+            if (statusDiv) {
+                statusDiv.textContent = message;
+            }
+        }
+        
+        function showResult(message, type) {
+            console.log('showResult:', message, type);
+            const resultDiv = document.getElementById('result');
+            if (resultDiv) {
+                resultDiv.textContent = message;
+                resultDiv.className = 'result ' + type;
+                
+                setTimeout(() => {
+                    resultDiv.textContent = '';
+                    resultDiv.className = 'result';
+                }, 5000);
+            }
+        }
+
+        function loadSettings() {
+            console.log('loadSettings called');
+            try {
+                const savedSettings = localStorage.getItem('emailCheckSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    
+                    document.getElementById('subjectCheck').checked = settings.subjectCheck || false;
+                    document.getElementById('recipientCheck').checked = settings.recipientCheck || false;
+                    document.getElementById('attachmentCheck').checked = settings.attachmentCheck || false;
+                    document.getElementById('keywordCheck').checked = settings.keywordCheck || false;
+                    document.getElementById('externalDomainCheck').checked = settings.externalDomainCheck || false;
+                    
+                    document.getElementById('attachmentKeywords').value = settings.attachmentKeywords || '添付,attachment,ファイル';
+                    document.getElementById('warningKeywords').value = settings.warningKeywords || '機密,重要,urgent,極秘';
+                    document.getElementById('internalDomains').value = settings.internalDomains || '';
+                    
+                    showResult('設定を読み込みました', 'success');
+                }
+            } catch (error) {
+                console.error('設定読み込みエラー:', error);
+                showResult('設定の読み込みに失敗しました: ' + error.message, 'error');
+            }
+        }
+
+        function saveSettings() {
+            console.log('saveSettings called');
+            try {
+                const settings = {
+                    subjectCheck: document.getElementById('subjectCheck').checked,
+                    recipientCheck: document.getElementById('recipientCheck').checked,
+                    attachmentCheck: document.getElementById('attachmentCheck').checked,
+                    keywordCheck: document.getElementById('keywordCheck').checked,
+                    externalDomainCheck: document.getElementById('externalDomainCheck').checked,
+                    attachmentKeywords: document.getElementById('attachmentKeywords').value,
+                    warningKeywords: document.getElementById('warningKeywords').value,
+                    internalDomains: document.getElementById('internalDomains').value
+                };
+                
+                localStorage.setItem('emailCheckSettings', JSON.stringify(settings));
+                showResult('設定を保存しました', 'success');
+                console.log('Settings saved:', settings);
+            } catch (error) {
+                console.error('設定保存エラー:', error);
+                showResult('設定の保存に失敗しました: ' + error.message, 'error');
+            }
+        }
+
+        function testConnection() {
+            console.log('testConnection called');
+            
+            if (!officeContext) {
+                showResult('Office.jsが初期化されていません', 'error');
+                return;
+            }
+            
+            try {
+                // Office.context.mailbox の存在確認
+                if (!officeContext.mailbox) {
+                    showResult('mailboxオブジェクトが利用できません', 'error');
+                    return;
+                }
+                
+                // Office.context.mailbox.item の存在確認
+                if (!officeContext.mailbox.item) {
+                    showResult('現在の環境ではメールアイテムにアクセスできません\n（メール作成・編集画面で実行してください）', 'error');
+                    return;
+                }
+                
+                // 実際にアクセステスト
+                officeContext.mailbox.item.subject.getAsync((result) => {
+                    if (result.status === Office.AsyncResultStatus.Succeeded) {
+                        const subject = result.value || '（件名なし）';
+                        showResult('✓ 接続テスト成功\n件名: ' + subject, 'success');
+                    } else {
+                        showResult('件名の取得に失敗しました\nエラー: ' + result.error.message, 'error');
+                    }
+                });
+                
+            } catch (error) {
+                console.error('接続テストエラー:', error);
+                showResult('接続テスト中にエラーが発生しました: ' + error.message, 'error');
+            }
+        }
+
+        // Office.js 初期化
+        Office.onReady((info) => {
+            console.log('Office.onReady called', info);
+            officeContext = Office.context;
+            
+            if (info.host === Office.HostType.Outlook) {
+                updateStatus('Outlook環境で動作中');
+                
+                // メールアイテムの利用可否を確認
+                if (officeContext && officeContext.mailbox && officeContext.mailbox.item) {
+                    updateStatus('Outlook環境（メールアイテム利用可能）');
+                } else {
+                    updateStatus('Outlook環境（メールアイテム利用不可）');
+                }
+            } else {
+                updateStatus('Outlook以外の環境: ' + info.host);
+            }
+            
+            showResult('Office.jsが初期化されました', 'success');
+        });
+
+        // DOM読み込み完了時の処理
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM ready');
+            
+            // ボタンイベント設定
+            document.getElementById('saveBtn').addEventListener('click', saveSettings);
+            document.getElementById('testBtn').addEventListener('click', testConnection);
+            
+            // 設定読み込み
+            loadSettings();
+        });
+
+        console.log('Script loaded');
+    </script>
+</body>
+</html>
