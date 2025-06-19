@@ -26,7 +26,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://orange-hayashi.github.io/Outlook-Addin-Sample/dist/taskpane.html"/>
+        <SourceLocation DefaultValue="https://orange-hayashi.github.io/Outlook-Addin-Sample/taskpane-safe.html"/>
         <RequestedHeight>250</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -78,7 +78,7 @@
         <bt:Image id="Icon.80x80" DefaultValue="https://orange-hayashi.github.io/Outlook-Addin-Sample/assets/icon-80x80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://orange-hayashi.github.io/Outlook-Addin-Sample/dist/taskpane.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://orange-hayashi.github.io/Outlook-Addin-Sample/taskpane-safe.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="CommandsGroup.Label" DefaultValue="誤送信防止"/>
